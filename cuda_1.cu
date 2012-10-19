@@ -2,10 +2,7 @@
 __global__ void kernel(int *a)
 {
     int idx = blockIdx.x*blockDim.x + threadIdx.x;
-    if(idx > 5)
-        a[idx] = 7;
-    else
-        a[idx] = 5;
+    a[idx] = idx;
 }
 int main()
 {
@@ -22,12 +19,16 @@ int main()
         return 1;
     }
     for(int i=0; i<dimx; i++)
+    {
         s_a[i] = i;
+        h_a[i] = i;
+    }
     cudaMemset( d_a, 0, num_bytes );
+    cudaMemcpy( d_a, s_a, num_bytes, cudaMemcpyHostToDevice );
     dim3 grid, block;
     block.x = 4;
     grid.x = dimx/block.x;
-    kernel<<<grid, block>>>(d_a);
+    /*kernel<<<grid, block>>>(d_a);*/
     cudaMemcpy( h_a, d_a, num_bytes, cudaMemcpyDeviceToHost );
     for(int i=0; i<dimx; i++)
         printf("%d ", h_a[i] );

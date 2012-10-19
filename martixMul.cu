@@ -5,6 +5,7 @@
  */
 #include <stdio.h>
 #include<stdlib.h>
+#include<time.h>
 
 #define MAX_NUM_SIZE 100
 #define DEFAULT_M 400
@@ -32,6 +33,7 @@ __global__ void kernel(int m, int n, int o, int *a, int *b, int *c)
 
 void randomInit(int *array, int m)
 {
+    srand(time(0));
     for(int i = 0;i < m; i++)
     {
         array[i] = random() % MAX_NUM_SIZE;
@@ -69,7 +71,7 @@ void compareMatrix(int *a, int *b, int m, int n)
         {
             if( a[i*n +j] != b[i*n + j])
             {
-                /*printf("array[%d][%d] is different, with %d and %d\n", i, j, a[i*m+j], b[i*m+j]);*/
+                printf("array[%d][%d] is different, with %d and %d\n", i, j, a[i*m+j], b[i*m+j]);
                 isSame = false;
             }
         }
@@ -138,11 +140,28 @@ int main(int argc, char* argv[])
     {
         block.x = atoi(argv[4]);
     }
-    //在正好是整除时，没有添加例外。。相当于冗余吧。。
-    grid.x = (num_c + block.x - 1)/block.x + 1;
+    grid.x = (num_c + block.x - 1)/block.x;
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start),
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
     kernel<<<grid, block>>>(m, n, o, d_a, d_b, d_c);
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float time; 
+    cudaEventElapsedTime(&time, start, stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+    
+    printf("Time elapsed: %fms\n", time);
+
     cudaMemcpy( h_c, d_c, num_bytes_c, cudaMemcpyDeviceToHost );
+    clock_t start_cpu = clock();
     cpuCalc(m, n, o, h_a, h_b, cpu);
+    clock_t end_cpu = clock();
+    float cpu_time = ((double)end_cpu - start_cpu)*1000/CLOCKS_PER_SEC;
+    printf("Cpu Time Elapsed: %fms\n", cpu_time);
     /*printf("A:\n");*/
     /*printMatrix(h_a, m, n);*/
     /*printf("B:\n");*/
