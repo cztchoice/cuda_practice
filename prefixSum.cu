@@ -16,6 +16,8 @@
 #define DATA_SIZE 32
 #define DEFAULT_BLOCK_SIZE 256
 #define RAND_INT 50
+//Only generate integers with value 0 or 1
+#define MAX_INT_SIZE 2
 typedef float calcType;
 
 void randomInit(calcType *array, int m)
@@ -24,6 +26,15 @@ void randomInit(calcType *array, int m)
     for(int i = 0;i < m; i++)
     {
         array[i] = ((calcType)random() / RAND_MAX) * RAND_INT;
+    }
+}
+
+void randomInit(int *array, int m)
+{
+    /*srand(time(0));*/
+    for(int i = 0;i < m; i++)
+    {
+        array[i] = random()%MAX_INT_SIZE;
     }
 }
 
