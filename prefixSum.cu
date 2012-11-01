@@ -54,7 +54,7 @@ void cpuCalc(calcType *out, const calcType *in, int m)
 
     int j = 0;
     out[0] = 0;
-    for(j = 0;j < m;j++)
+    for(j = 1;j < m;j++)
     {
         out[j] = out[j - 1] + in[j - 1];
     }
